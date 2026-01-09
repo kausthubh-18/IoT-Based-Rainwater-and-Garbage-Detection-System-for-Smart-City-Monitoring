@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Smart City – Rainwater & Garbage Monitoring</title>
+
+<style>
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #0f172a;
+  color: white;
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  background: #1e293b;
+  padding: 15px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  border-bottom: 3px solid #38bdf8;
+}
+
+.hero {
+  text-align: center;
+  padding: 40px 20px;
+  background: linear-gradient(120deg, #1e293b, #0f172a);
+}
+
+.hero h2 {
+  font-size: 32px;
+  margin-bottom: 10px;
+  color: #7dd3fc;
+}
+
+.hero p {
+  font-size: 18px;
+  opacity: 0.8;
+}
+
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+  padding: 30px;
+}
+
+.card {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 20px;
+  border: 2px solid #334155;
+  box-shadow: 0 0 15px rgba(56,189,248,0.3);
+  transition: 0.3s;
+  animation: float 2s infinite alternate ease-in-out;
+}
+
+.card:hover {
+  transform: scale(1.05);
+  border-color: #38bdf8;
+  box-shadow: 0 0 25px rgba(56,189,248,0.6);
+}
+
+@keyframes float {
+  from { transform: translateY(2px); }
+  to { transform: translateY(-6px); }
+}
+
+.card h3 {
+  font-size: 20px;
+  margin: 0;
+  color: #38bdf8;
+}
+
+.card .value {
+  font-size: 28px;
+  font-weight: 700;
+  margin-top: 8px;
+}
+
+.progress {
+  width: 100%;
+  height: 14px;
+  background: #475569;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0%;
+  border-radius: 10px;
+}
+
+.alert-section {
+  background: #1e293b;
+  margin: 20px;
+  padding: 20px;
+  border-radius: 15px;
+  border-left: 4px solid #f87171;
+}
+
+.alert-section h3 {
+  margin: 0;
+  font-size: 22px;
+  color: #f87171;
+}
+
+.alert {
+  background: #450a0a;
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 10px;
+  border-left: 4px solid #f87171;
+  font-weight: 500;
+  animation: glow 1s infinite alternate;
+}
+
+@keyframes glow {
+  from { box-shadow: 0 0 5px #f87171; }
+  to { box-shadow: 0 0 15px #f87171; }
+}
+
+footer {
+  background: #1e293b;
+  text-align: center;
+  padding: 12px;
+  font-size: 15px;
+  margin-top: 30px;
+  border-top: 2px solid #38bdf8;
+}
+</style>
+</head>
+<body>
+
+<header>Smart City Monitoring System</header>
+
+<section class="hero">
+  <h2>IoT-Based Rainwater & Garbage Detection</h2>
+  <p>Real-Time Drain Water Levels, Rain Events & Smart Waste Bin Monitoring for Clean Cities</p>
+</section>
+
+<div class="dashboard">
+  <div class="card"><h3>Rain Status</h3><div class="value" id="rain">--</div></div>
+
+  <div class="card">
+    <h3>Water Level</h3>
+    <div class="value" id="water">0 cm</div>
+    <div class="progress"><div class="progress-bar" id="waterBar"></div></div>
+  </div>
+
+  <div class="card">
+    <h3>Garbage Fill Level</h3>
+    <div class="value" id="garbage">0 %</div>
+    <div class="progress"><div class="progress-bar" id="garbageBar"></div></div>
+  </div>
+
+  <div class="card"><h3>Gas/Odor Level</h3><div class="value" id="gas">0</div></div>
+  <div class="card"><h3>Location</h3><div class="value" id="place">--</div></div>
+  <div class="card"><h3>Device Status</h3><div class="value" id="device">--</div></div>
+</div>
+
+<div class="alert-section">
+  <h3>⚠ Alerts</h3>
+  <div id="alerts"></div>
+</div>
+
+<footer>Designed & Developed by YVD Kausthubh | United Integrated Services Pvt Ltd</footer>
+
+<script>
+// Sample GPS location (Hyderabad default)
+let lat = 17.385044;
+let lon = 78.486671;
+
+// Fetch real place name from GPS
+async function getPlaceName(lat, lon) {
+  try {
+    const res = await fetch(`https://geocode.maps.co/reverse?lat=${lat}&lon=${lon}`);
+    const data = await res.json();
+    return data.address.city || data.address.state || "Unknown Region";
+  } catch {
+    return "Location lookup failed";
+  }
+}
+
+// Update UI values dynamically
+async function updateDashboard() {
+  document.getElementById("rain").textContent = Math.random() > 0.5 ? "🌧️ Raining" : "☀️ No Rain";
+  document.getElementById("water").textContent = (Math.random() * 12).toFixed(2) + " cm";
+  document.getElementById("garbage").textContent = (Math.random() * 100).toFixed(0) + " %";
+  document.getElementById("gas").textContent = (Math.random() * 3000).toFixed(0);
+  document.getElementById("device").textContent = Math.random() > 0.2 ? "🟢 Online" : "🔴 Offline";
+  document.getElementById("place").textContent = await getPlaceName(lat, lon);
+
+  const water = parseFloat(document.getElementById("water").textContent);
+  const garbage = parseFloat(document.getElementById("garbage").textContent);
+
+  document.getElementById("waterBar").style.width = Math.min(water * 8, 100) + "%";
+  document.getElementById("waterBar").style.background = water > 8 ? "#f87171" : "#38bdf8";
+
+  document.getElementById("garbageBar").style.width = garbage + "%";
+  document.getElementById("garbageBar").style.background = garbage > 80 ? "#f87171" : "#16a34a";
+
+  const alerts = document.getElementById("alerts");
+  alerts.innerHTML = "";
+  const add = msg => alerts.innerHTML += `<div class="alert">${msg}</div>`;
+
+  if (garbage > 80) add("Garbage bin almost full – Cleaning required!");
+  if (water > 8) add("Drain overflow risk detected!");
+  if (gas > 2500) add("Unsafe gas/odor levels detected!");
+  if (document.getElementById("rain").textContent.includes("Raining")) add("Rain event logged in area!");
+}
+
+// Auto-refresh every 4 sec for live feel
+setInterval(updateDashboard, 4000);
+updateDashboard();
+</script>
+
+</body>
+</html>
